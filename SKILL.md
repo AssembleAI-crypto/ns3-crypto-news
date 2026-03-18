@@ -10,7 +10,7 @@ description: >
   All feeds available in 16 languages. No API key required. No setup.
   Use when the user asks about crypto news, market updates, breaking headlines,
   daily briefings, top stories, or news about specific coins or exchanges.
-version: 1.0.0
+version: 1.0.1
 metadata:
   openclaw:
     emoji: "\U0001F4F0"
@@ -91,13 +91,15 @@ NS3 has two independent pipelines delivering four feeds. Pipeline A reads every 
 
 ## How AI Classification Works
 
-Every article passes through a two-gate system:
+Every article passes through a four-stage classification pipeline:
 
-**Gate 1 (Format/Domain Filter):** Digests, promotions, routine notices, and contextless data points (on-chain movements without stated cause, non-systemic liquidation snapshots, catalyst-free price alerts, notable trader P&L) are classified as Level 4-5 and evaluated no further.
+**Stage 1 (L5 Filter):** Removes off-domain content (no crypto connection, no macro transmission channel) and sponsored/promotional content. Classified as Level 5 and excluded from the feed entirely.
 
-**Gate 2 (Hard Caps):** Pure price analysis, chart patterns, research/forecasts, opinion/commentary, and unexecuted governance proposals are capped at Level 3.
+**Stage 2 (L4 Filter):** Separates routine and analysis-thin content. Digests, routine notices, contextless data points (on-chain movements without stated cause, non-systemic liquidation snapshots, catalyst-free price alerts), opinions, forecasts, chart analysis, and unexecuted governance proposals are classified as Level 4.
 
-**L1/L2 Evaluation:** Only articles passing both gates are scored on three axes: Impact (scope), Actionability (execution stage), Transmission (path to crypto market). When uncertain, AI always downgrades by one level.
+**Stage 3 (L2 Condition Table):** Articles passing Stages 1-2 are checked against a structured condition table across seven categories: (1) Regulation/Legal, (2) Institutional/Product Launch, (3) Macro Data/Policy, (4) Market Structure/Security, (5) Institutional Capital Flows, (6) Geopolitical/Macro Shock, (7) Crypto Ecosystem Shift. If the article matches any condition, Level 2. If no condition matches, Level 3.
+
+**Stage 4 (L1 Override):** Only Level 2 articles are eligible for upgrade to Level 1. All three conditions must be met: systemic scope (can reprice broad risk assets market-wide), already executed (not planned or expected), and immediate transmission (impact reaches participants within hours). When uncertain, AI always downgrades by one level.
 
 | Level | newsType | Meaning | AI Insight |
 |-------|----------|---------|------------|
@@ -105,9 +107,9 @@ Every article passes through a two-gate system:
 | 2 | important | Meaningful market change (e.g., regulatory action with binding next-step, large capital flow with stated magnitude, US/China official data with crypto channel) | Full (5 sections) |
 | 3 | normal | General crypto news: ecosystem issues, governance, institutional pilots, research, price analysis | Full (5 sections) |
 | 4 | normal | Routine: digests, listings/delistings, contextless wallet transfers, small liquidation snapshots | Key Point only |
-| 5 | normal | Off-domain: no stated crypto transmission path | Key Point only |
+| 5 | — | Off-domain: no stated crypto transmission path | Excluded from feed |
 
-Level 1: rare (0 on most days, 1-2 at most during major events). Level 2: 20-30 per weekday. Most articles: Level 3.
+Level 1: rare (0 on most days, 1-2 at most during major events). Level 2: 30-50 per weekday. Most articles: Level 3.
 
 ## AI Insight (Level 1-3)
 
@@ -119,7 +121,7 @@ Five sections per article:
 - **Ripple Effect**: Transmission mechanism: trigger, channel, market behavior.
 - **Opportunities & Risks**: Conditional cues. "If X happens, then Y is a signal to..."
 
-Level 4-5: Key Point only (2-3 sentences).
+Level 4: Key Point only (2-3 sentences). Level 5: excluded from feed entirely.
 
 Parsing: Split the `<insight>` field on `##` headings to extract individual sections.
 
@@ -175,6 +177,26 @@ curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=4,5"
 curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=3,4,5"
 ```
 
+**Exclude sources** (multi): Removes articles from specific media outlets by source ID.
+```bash
+# Exclude CoinMarketCap (ID 3)
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeSources=3"
+# Exclude multiple sources
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeSources=1,2"
+```
+
+Source IDs: 1 Cointelegraph, 2 CoinDesk, 3 CoinMarketCap, 4 Watcher.Guru, 5 The Daily Hodl, 6 BeInCrypto, 7 Decrypt, 8 The Block, 9 Bloomberg Crypto, 10 Forbes Crypto, 11 Reuters Crypto, 12 Fortune Crypto, 13 CoinNess, 14 Odaily, 15 CryptoSlate, 16 Bitcoin Magazine, 17 DL News, 18 The Defiant, 19 Protos, 20 Wu Blockchain.
+
+**Exclude categories** (multi): Removes articles in specific topic categories.
+```bash
+# Exclude exchange operations news
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeCategories=6"
+# Exclude general and exchange operations
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeCategories=5,6"
+```
+
+Category IDs: 1 Market Trends, 2 Regulation & Policy, 3 Institutional Updates, 4 Market Outlook & Expert Views, 5 General, 6 Exchange & Venue Operations.
+
 **Combined filters**: Multiple parameters can be combined.
 ```bash
 # Important BTC news only (recommended for "BTC important news")
@@ -192,7 +214,7 @@ curl -s "https://api.ns3.ai/feed/news-data?lang=ko&crypto=ETH&newsType=important
 - `<level>`: 1-5
 - `<newsType>`: breaking | important | normal
 - `<mentionedCoins>`: Related token symbols, CSV (e.g., BTC,ETH,SOL). May be empty.
-- `<insight>`: Full AI analysis in markdown. Split on `##` to extract sections. Level 1-3 = 5 sections. Level 4-5 = Key Point only.
+- `<insight>`: Full AI analysis in markdown. Split on `##` to extract sections. Level 1-3 = 5 sections. Level 4 = Key Point only. Level 5 is excluded from feed.
 - `<pubDate>`: RFC 822 (e.g., Sat, 07 Mar 2026 15:04:45 GMT)
 - `<link>`: NS3 AI Insight page URL
 - `<guid>`: Unique item ID (use for deduplication)
@@ -304,7 +326,7 @@ Spec: https://docs.ns3.ai/ns3-rss/news-flash-rss
 
 ## About NS3
 
-NS3 (ns3.ai) is an AI-powered crypto news intelligence platform by Assemble AI. AI reads every article published across 20+ trusted media outlets in real time, classifies each by importance using a two-gate system with 3-axis scoring, and delivers structured analysis in 16 languages. Trusted by Binance and CoinGecko.
+NS3 (ns3.ai) is an AI-powered crypto news intelligence platform by Assemble AI. AI reads every article published across 20+ trusted media outlets in real time, classifies each by importance using a four-stage pipeline with condition-table matching, and delivers structured analysis in 16 languages. Trusted by Binance and CoinGecko.
 
 Website: https://ns3.ai | Docs: https://docs.ns3.ai/ns3-rss | About: https://about.ns3.ai
 App Store: https://apps.apple.com/app/ns3-ai-ai-based-crypto-news/id6572281552 | Google Play: https://play.google.com/store/apps/details?id=com.sta1.front
