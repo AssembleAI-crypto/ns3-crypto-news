@@ -64,11 +64,11 @@ Language codes: `en` (English), `zh-CN` (简体中文), `zh-TW` (繁體中文), 
 Replace `lang=en` with the target language code in any feed URL. Example:
 ```bash
 # English
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en"
 # Korean
-curl -s "https://api.ns3.ai/feed/news-data?lang=ko&excludeLevels=4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=ko"
 # Japanese
-curl -s "https://api.ns3.ai/feed/news-data?lang=ja&excludeLevels=4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=ja"
 ```
 
 ## When to Use Which Feed
@@ -138,10 +138,10 @@ Real-time stream of every article with AI classification and analysis.
 ```bash
 # Best: specific coin + important only (The past week or so)
 curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=SOL&newsType=important"
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=SOL&excludeLevels=3,4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=SOL&excludeLevels=3,4"
 
 # Good: specific coin + exclude routine
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC&excludeLevels=4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC&excludeLevels=4"
 
 # Acceptable: specific coin + all levels (use only when the user explicitly requests all news including routine items)
 curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=ETH"
@@ -151,16 +151,16 @@ curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=ETH"
 
 Base URL:
 ```bash
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en"
 ```
 
 ### Filters
 
 **Token filter** (single token): Returns only news related to a specific token. Always combine with `excludeLevels=4,5` to exclude routine items.
 ```bash
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC&excludeLevels=4,5"
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=ETH&excludeLevels=4,5"
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=SOL&excludeLevels=4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=ETH"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=SOL"
 ```
 
 **News type filter** (single value): Returns only articles of a specific type.
@@ -172,37 +172,17 @@ curl -s "https://api.ns3.ai/feed/news-data?lang=en&newsType=important"
 **Exclude levels** (multi): Removes articles at specific importance levels.
 ```bash
 # Remove routine and off-domain (Level 1-3 only)
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=4"
 # Level 1-2 only
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=3,4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=3,4"
 ```
-
-**Exclude sources** (multi): Removes articles from specific media outlets by source ID.
-```bash
-# Exclude CoinMarketCap (ID 3)
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeSources=3"
-# Exclude multiple sources
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeSources=1,2"
-```
-
-Source IDs: 1 Cointelegraph, 2 CoinDesk, 3 CoinMarketCap, 4 Watcher.Guru, 5 The Daily Hodl, 6 BeInCrypto, 7 Decrypt, 8 The Block, 9 Bloomberg Crypto, 10 Forbes Crypto, 11 Reuters Crypto, 12 Fortune Crypto, 13 CoinNess, 14 Odaily, 15 CryptoSlate, 16 Bitcoin Magazine, 17 DL News, 18 The Defiant, 19 Protos, 20 Wu Blockchain.
-
-**Exclude categories** (multi): Removes articles in specific topic categories.
-```bash
-# Exclude exchange operations news
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeCategories=6"
-# Exclude general and exchange operations
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeCategories=5,6"
-```
-
-Category IDs: 1 Market Trends, 2 Regulation & Policy, 3 Institutional Updates, 4 Market Outlook & Expert Views, 5 General, 6 Exchange & Venue Operations.
 
 **Combined filters**: Multiple parameters can be combined.
 ```bash
 # Important BTC news only (recommended for "BTC important news")
 curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC&newsType=important"
 # BTC news excluding routine items
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC&excludeLevels=4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC&excludeLevels=4"
 # Important ETH news in Korean
 curl -s "https://api.ns3.ai/feed/news-data?lang=ko&crypto=ETH&newsType=important"
 ```
