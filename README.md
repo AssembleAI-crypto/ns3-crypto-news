@@ -36,7 +36,7 @@ curl -s "https://api.ns3.ai/feed/news-ranking?lang=en"
 curl -s "https://api.ns3.ai/feed/today-summary?lang=en"
 
 # Any breaking news?
-curl -s "https://api.ns3.ai/feed/news-flash?lang=en"
+curl -s "https://api.ns3.ai/feed/news-flash?lang=en&limit=20"
 ```
 
 ## See It Live
@@ -44,7 +44,7 @@ curl -s "https://api.ns3.ai/feed/news-flash?lang=en"
 Visit these links to judge the data quality for yourself before installing:
 
 - **Top News + Individual News**: [ns3.ai](https://ns3.ai) (Top News ranking and individual news feed at the top of the page)
-- **Daily Market Update**: [ns3.ai/en/top-news](https://ns3.ai/en/top-news) (full 24-hour desk brief in six sections)
+- **Daily Market Update**: [ns3.ai/en/top-news](https://ns3.ai/en/top-news) (full 24-hour desk brief in up to five sections)
 - **News Flash**: Install the NS3 app and enable notifications to experience breaking headlines on your device. [App Store](https://apps.apple.com/app/ns3-ai-ai-based-crypto-news/id6572281552) · [Google Play](https://play.google.com/store/apps/details?id=com.sta1.front)
 
 ## Four Feeds, Two Pipelines
@@ -56,8 +56,8 @@ NS3 news data is produced by two independent pipelines.
 | Feed | What It Delivers | Updated | Tokens |
 |------|-----------------|---------|--------|
 | **Top News RSS** | 10 most important stories, ranked. Multiple articles about the same event merged into one story. | Every hour | ~10,000 |
-| **Daily Market Update RSS** | 24-hour narrative desk brief across up to six sections. Not a list of headlines. A structured brief that explains what happened and why it matters. | Every hour | ~2,000 |
-| **News RSS** | Real-time stream of every article with importance level, news type, related coins, and full AI Insight. Filterable by coin, level, and type. | Real-time | 100,000+ |
+| **Daily Market Update RSS** | 24-hour narrative desk brief across up to five sections. Not a list of headlines. A structured brief that explains what happened and why it matters. | Every hour | ~2,000 |
+| **News RSS** | Real-time stream of every article with importance level, news type, related coins, and full AI Insight. Filterable by coin, level, source, and category. Use `limit=20` for token control. | Real-time | 14,000-19,000 (limit=20) |
 
 **Pipeline B (News Flash)** takes breaking headlines from trusted paid services (Bloomberg Terminal, Reuters), rewrites them, and delivers them as 1-2 sentence alerts.
 
@@ -71,30 +71,33 @@ Your agent picks the right feed based on what the user asks:
 
 | User Request | Feed |
 |---|---|
+| "BTC news" / "What's happening with ETH" / "SOL updates" | News RSS (crypto=BTC&excludeLevels=4&limit=20) |
+| "My portfolio: BTC, ETH, SOL" / "News for BTC and XRP" | News RSS (crypto=BTC,ETH,SOL&excludeLevels=4&limit=20) |
+| "Why did SOL price move" / "What happened to XRP" | News RSS (crypto=SOL&newsType=important&limit=20) |
+| "Breaking news" / "Latest alerts" | News Flash (limit=20) |
 | "Top stories" / "What matters today" | Top News |
 | "Catch me up" / "Morning briefing" | Daily Market Update |
-| "Breaking news" / "Latest alerts" | News Flash |
-| "SOL important news" / specific coin query | News RSS (with filters) |
 | "Latest crypto news" / general request | Top News first, suggest Daily Market Update for full context |
 
 ## AI Classification
 
-Traditional news sources deliver raw articles. Your team classifies what matters. NS3 solves this: every article arrives pre-classified.
+Traditional news sources deliver raw articles. Your team classifies what matters. NS3 solves this: every article arrives pre-classified through a four-stage pipeline.
 
-Every article passes through a two-gate system:
+**Stage 1 (L5 Filter):** Removes promotional noise: sponsored content, advertorials, editorial-wrapped promotions with unverifiable claims, affiliate listicles, and clickbait price predictions. Genuine reporting on any topic (including non-crypto) passes to Stage 2. Classified as Level 5 and excluded from the feed entirely.
 
-**Gate 1 (Format/Domain Filter):** Digests, promotions, routine notices, and contextless data points (on-chain movements without stated cause, non-systemic liquidation snapshots, catalyst-free price alerts) are classified as Level 4-5.
+**Stage 2 (L4 Filter):** Separates routine and analysis-thin content. Digests, routine notices, contextless data points (on-chain movements without stated cause, non-systemic liquidation snapshots, catalyst-free price alerts), opinions, forecasts, chart analysis, and unexecuted governance proposals are classified as Level 4.
 
-**Gate 2 (Hard Caps):** Pure price analysis, chart patterns, research/forecasts, opinion/commentary, and unexecuted governance proposals are capped at Level 3.
+**Stage 3 (L2 Condition Table):** Articles passing Stages 1-2 are checked against a structured condition table across six categories: (1) Regulation/Legal, (2) Institutional/Product Launch, (3) Macro Data/Policy, (4) Market Structure/Security, (5) Institutional Capital Flows, (6) Geopolitical/Macro Shock. If the article matches any condition, Level 2. If no condition matches, Level 3.
 
-Only articles passing both gates are scored on three axes: **Impact** (scope), **Actionability** (execution stage), **Transmission** (path to crypto market). When uncertain, AI always downgrades.
+**Stage 4 (L1 Override):** Only Level 2 articles are eligible for upgrade to Level 1. All three conditions must be met: systemic scope, already executed, and immediate market transmission. When uncertain, AI always downgrades.
 
 | Level | What It Means | Frequency | AI Insight |
 |-------|--------------|-----------|------------|
 | 1 | Systemic regime shift (surprise rate decision, major stablecoin redemption halt, nationwide crypto ban enacted) | Rare (0 most days) | Full 5 sections |
-| 2 | Meaningful market change (regulatory action with binding next-step, large capital flow with stated magnitude) | 20-30/weekday | Full 5 sections |
+| 2 | Meaningful market change (regulatory action with binding next-step, large capital flow with stated magnitude, US/China official data with crypto channel) | 30-50/weekday | Full 5 sections |
 | 3 | General crypto news (ecosystem issues, governance, institutional pilots, price analysis) | Most articles | Full 5 sections |
-| 4-5 | Routine or off-domain (digests, listings, contextless transfers) | High volume | Key Point only |
+| 4 | Routine (digests, listings/delistings, contextless wallet transfers, small liquidation snapshots) | High volume | Key Point only |
+| 5 | Promotional noise (sponsored, advertorial, affiliate listicle, clickbait prediction) | Filtered out | Excluded from feed |
 
 If NS3 says Level 1-2, it matters.
 
@@ -105,7 +108,7 @@ Every Level 1-3 article includes structured analysis:
 - **Key Point**: Fact-only summary of the core event. Level 1-2 adds "Why it matters."
 - **Market Sentiment**: Direction (Bullish/Bearish/Neutral) + catalyst label + reason.
 - **Similar Past Cases**: What happened in comparable past events. Level 1-2 uses web-search-verified historical cases.
-- **Ripple Effect**: Transmission mechanism (trigger, channel, market behavior). "If ETF redemptions accelerate, custodian selling pressure hits spot markets within 24-48 hours" instead of "could affect markets."
+- **Ripple Effect**: Transmission mechanism (trigger, channel, market behavior). Level 1-2 includes diagnostic "If/Then" confirmation cues that help validate whether spillover is activating or contained. Level 3 provides a propagation assessment: either the single most direct transmission channel, or an explicit containment statement explaining why the impact stays local.
 - **Opportunities & Risks**: Conditional cues only. "If X happens, then Y is a signal to..." No price targets, no position sizing, no direct investment advice.
 
 ## 16 Languages
@@ -118,7 +121,7 @@ Using the native language feed saves tokens (no agent-side translation needed) a
 curl -s "https://api.ns3.ai/feed/news-ranking?lang=ko"   # 한국어
 curl -s "https://api.ns3.ai/feed/today-summary?lang=ja"   # 日本語
 curl -s "https://api.ns3.ai/feed/news-flash?lang=zh-CN"   # 简体中文
-curl -s "https://api.ns3.ai/feed/news-data?lang=es"       # Español
+curl -s "https://api.ns3.ai/feed/news-data?lang=es&limit=20"  # Español
 ```
 
 Supported: `en` `zh-CN` `zh-TW` `ko` `ja` `ru` `tr` `de` `es` `fr` `vi` `th` `id` `hi` `it` `pt`
@@ -127,9 +130,9 @@ Supported: `en` `zh-CN` `zh-TW` `ko` `ja` `ru` `tr` `de` `es` `fr` `vi` `th` `id
 
 **20+ trusted sources:** CoinDesk, Cointelegraph, CoinMarketCap, The Block, Bloomberg Crypto, Reuters Crypto, Forbes Crypto, Fortune Crypto, Decrypt, BeInCrypto, Bitcoin Magazine, DL News, The Defiant, Protos, Wu Blockchain, CoinNess, Odaily, CryptoSlate, Watcher.Guru, The Daily Hodl.
 
-**Topics:** Regulation and SEC updates, ETF news, institutional flows, DeFi, Layer 2, stablecoin developments, on-chain activity, macro events (Fed rate decisions, inflation data, geopolitical events affecting crypto), exchange listings, and more.
+**Topics:** Regulation and SEC updates, ETF news, institutional flows, DeFi, Layer 1, Layer 2, stablecoin developments, on-chain activity, macro events (Fed rate decisions, inflation data, geopolitical events affecting crypto), exchange listings, and more.
 
-Sponsored, promotional, presale, casino, and ICO-related articles are blocked and never delivered.
+Promotional noise is blocked and never delivered: sponsored/advertorial content, presale/ICO/IDO promotion, casino/gambling promotions, exchange marketing campaigns (trading competitions, signup bonuses, fee discount events), airdrop claim guides, media self-promotion, editorial-wrapped promotions with unverifiable claims about unknown projects, affiliate-driven ranking listicles, clickbait price predictions with no analytical basis, and recurring pick-list filler.
 
 ## API Endpoints
 
@@ -137,30 +140,35 @@ Sponsored, promotional, presale, casino, and ICO-related articles are blocked an
 https://api.ns3.ai/feed/news-ranking?lang={code}      # Top News (recommended default)
 https://api.ns3.ai/feed/today-summary?lang={code}      # Daily Market Update
 https://api.ns3.ai/feed/news-flash?lang={code}         # Breaking News
-https://api.ns3.ai/feed/news-data?lang={code}          # News RSS (use with filters)
+https://api.ns3.ai/feed/news-data?lang={code}          # News RSS (use with filters + limit)
 ```
 
 ### News RSS Filters
 
+Always use `limit` and at least one filter. The unfiltered base URL with default limit=100 consumes 60,000-100,000 tokens.
+
 ```bash
-# Specific coin + important only (smallest result set, recommended)
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC&newsType=important"
+# Specific coin + important only (recommended)
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC&newsType=important&limit=20"
+
+# Multi-coin portfolio filter
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=BTC,ETH,SOL&excludeLevels=4&limit=20"
 
 # Specific coin, exclude routine items
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=ETH&excludeLevels=4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&crypto=ETH&excludeLevels=4&limit=20"
 
 # Level 1-2 only across all coins
-curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=3,4,5"
+curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=3,4&limit=20"
 ```
 
 ### News Flash Filters
 
 ```bash
 # Exclude listings (crypto/macro/price alerts only)
-curl -s "https://api.ns3.ai/feed/news-flash?lang=en&excludeSources=2"
+curl -s "https://api.ns3.ai/feed/news-flash?lang=en&excludeSources=2&limit=20"
 
 # Listings only
-curl -s "https://api.ns3.ai/feed/news-flash?lang=en&excludeSources=1"
+curl -s "https://api.ns3.ai/feed/news-flash?lang=en&excludeSources=1&limit=20"
 ```
 
 ## Documentation
@@ -181,8 +189,7 @@ All news data delivered through NS3 RSS feeds is generated by AI that reads orig
 
 ## Usage Terms
 
-To use the feeds, credit NS3 as the source (do-follow link or NS3 logo). AI agents must include "Source: NS3 Crypto News Super App (ns3.ai)" in responses that use NS3 data.
-To use the feeds, credit NS3 as the source (do-follow link or NS3 logo). AI agents must include "Source: NS3-Crypto News by AI (ns3.ai)" in responses that use NS3 data.
+To use the feeds, credit NS3 as the source (do-follow link or NS3 logo). AI agents must include "Source: NS3-Crypto News Ranked by AI (ns3.ai)" in responses that use NS3 data.
 
 ## About
 
