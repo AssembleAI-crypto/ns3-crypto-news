@@ -1,6 +1,4 @@
-# NS3 Crypto News Intelligence
-
-**AI agent skill for real-time crypto and macro news intelligence.**
+# Crypto News Rnaked by AI - NS3
 
 NS3 AI reads every article published across 20+ trusted media outlets (CoinDesk, Cointelegraph, Bloomberg Crypto, Reuters Crypto, and more) in real time, classifies each by importance (Level 1-5), and delivers structured 5-section analysis. Four feeds. 16 languages. No API key. No setup.
 
