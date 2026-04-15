@@ -34,7 +34,7 @@ curl -s "https://api.ns3.ai/feed/news-ranking?lang=en"
 curl -s "https://api.ns3.ai/feed/today-summary?lang=en"
 
 # Any breaking news?
-curl -s "https://api.ns3.ai/feed/news-flash?lang=en&limit=20"
+curl -s "https://api.ns3.ai/feed/news-flash?lang=en&limit=30"
 ```
 
 ## See It Live
@@ -72,20 +72,20 @@ Your agent picks the right feed based on what the user asks:
 | "BTC news" / "What's happening with ETH" / "SOL updates" | News RSS (crypto=BTC&excludeLevels=4&limit=20) |
 | "My portfolio: BTC, ETH, SOL" / "News for BTC and XRP" | News RSS (crypto=BTC,ETH,SOL&excludeLevels=4&limit=20) |
 | "Why did SOL price move" / "What happened to XRP" | News RSS (crypto=SOL&newsType=important&limit=20) |
-| "Breaking news" / "Latest alerts" | News Flash (limit=20) |
+| "Breaking news" / "Latest alerts" | News Flash (limit=30) |
 | "Top stories" / "What matters today" | Top News |
 | "Catch me up" / "Morning briefing" | Daily Market Update |
 | "Latest crypto news" / general request | Top News first, suggest Daily Market Update for full context |
 
 ## AI Classification
 
-Traditional news sources deliver raw articles. Your team classifies what matters. NS3 solves this: every article arrives pre-classified through a four-stage pipeline.
+Traditional news sources deliver raw articles that still need to be classified before use. NS3 solves this: every article arrives pre-classified through a four-stage pipeline.
 
 **Stage 1 (L5 Filter):** Removes promotional noise: sponsored content, advertorials, editorial-wrapped promotions with unverifiable claims, affiliate listicles, and clickbait price predictions. Genuine reporting on any topic (including non-crypto) passes to Stage 2. Classified as Level 5 and excluded from the feed entirely.
 
 **Stage 2 (L4 Filter):** Separates routine and analysis-thin content. Digests, routine notices, contextless data points (on-chain movements without stated cause, non-systemic liquidation snapshots, catalyst-free price alerts), opinions, forecasts, chart analysis, and unexecuted governance proposals are classified as Level 4.
 
-**Stage 3 (L2 Condition Table):** Articles passing Stages 1-2 are checked against a structured condition table across six categories: (1) Regulation/Legal, (2) Institutional/Product Launch, (3) Macro Data/Policy, (4) Market Structure/Security, (5) Institutional Capital Flows, (6) Geopolitical/Macro Shock. If the article matches any condition, Level 2. If no condition matches, Level 3.
+**Stage 3 (L2 Condition Table):** Articles passing Stages 1-2 are checked against a structured condition table across seven categories: (1) Regulation/Legal, (2) Institutional/Product Launch, (3) Macro Data/Policy, (4) Market Structure/Security, (5) Institutional Capital Flows, (6) Geopolitical/Macro Shock, (7) Crypto Ecosystem Shift. If the article matches any condition, Level 2. If no condition matches, Level 3.
 
 **Stage 4 (L1 Override):** Only Level 2 articles are eligible for upgrade to Level 1. All three conditions must be met: systemic scope, already executed, and immediate market transmission. When uncertain, AI always downgrades.
 
@@ -104,7 +104,7 @@ If NS3 says Level 1-2, it matters.
 Every Level 1-3 article includes structured analysis:
 
 - **Key Point**: Fact-only summary of the core event. Level 1-2 adds "Why it matters."
-- **Market Sentiment**: Direction (Bullish/Bearish/Neutral) + catalyst label + reason.
+- **Market Sentiment**: Direction (Bullish / Cautiously Bullish / Neutral / Cautiously Bearish / Bearish) + catalyst label + reason.
 - **Similar Past Cases**: What happened in comparable past events. Level 1-2 uses web-search-verified historical cases.
 - **Ripple Effect**: Transmission mechanism (trigger, channel, market behavior). Level 1-2 includes diagnostic "If/Then" confirmation cues that help validate whether spillover is activating or contained. Level 3 provides a propagation assessment: either the single most direct transmission channel, or an explicit containment statement explaining why the impact stays local.
 - **Opportunities & Risks**: Conditional cues only. "If X happens, then Y is a signal to..." No price targets, no position sizing, no direct investment advice.
@@ -116,10 +116,12 @@ All four feeds are delivered simultaneously in 16 languages at local newsroom de
 Using the native language feed saves tokens (no agent-side translation needed) and delivers professional-grade financial translation that browser translation cannot match.
 
 ```bash
-curl -s "https://api.ns3.ai/feed/news-ranking?lang=ko"   # 한국어
-curl -s "https://api.ns3.ai/feed/today-summary?lang=ja"   # 日本語
-curl -s "https://api.ns3.ai/feed/news-flash?lang=zh-CN"   # 简体中文
-curl -s "https://api.ns3.ai/feed/news-data?lang=es&limit=20"  # Español
+# English
+curl -s "https://api.ns3.ai/feed/news-data?lang=en"
+# Korean
+curl -s "https://api.ns3.ai/feed/news-data?lang=ko"
+# Japanese
+curl -s "https://api.ns3.ai/feed/news-data?lang=ja"
 ```
 
 Supported: `en` `zh-CN` `zh-TW` `ko` `ja` `ru` `tr` `de` `es` `fr` `vi` `th` `id` `hi` `it` `pt`
@@ -128,7 +130,7 @@ Supported: `en` `zh-CN` `zh-TW` `ko` `ja` `ru` `tr` `de` `es` `fr` `vi` `th` `id
 
 **20+ trusted sources:** CoinDesk, Cointelegraph, CoinMarketCap, The Block, Bloomberg Crypto, Reuters Crypto, Forbes Crypto, Fortune Crypto, Decrypt, BeInCrypto, Bitcoin Magazine, DL News, The Defiant, Protos, Wu Blockchain, CoinNess, Odaily, CryptoSlate, Watcher.Guru, The Daily Hodl.
 
-**Topics:** Regulation and SEC updates, ETF news, institutional flows, DeFi, Layer 1, Layer 2, stablecoin developments, on-chain activity, macro events (Fed rate decisions, inflation data, geopolitical events affecting crypto), exchange listings, and more.
+**Topics:** Regulation and SEC updates, ETF news, institutional flows, DeFi, Layer 1, Layer 2, stablecoin developments, on-chain activity, security incidents (hacks, exploits, bridge failures), macro events (Fed rate decisions, inflation data, geopolitical events affecting crypto), exchange listings, and more.
 
 Promotional noise is blocked and never delivered: sponsored/advertorial content, presale/ICO/IDO promotion, casino/gambling promotions, exchange marketing campaigns (trading competitions, signup bonuses, fee discount events), airdrop claim guides, media self-promotion, editorial-wrapped promotions with unverifiable claims about unknown projects, affiliate-driven ranking listicles, clickbait price predictions with no analytical basis, and recurring pick-list filler.
 
@@ -163,10 +165,10 @@ curl -s "https://api.ns3.ai/feed/news-data?lang=en&excludeLevels=3,4&limit=20"
 
 ```bash
 # Exclude listings (crypto/macro/price alerts only)
-curl -s "https://api.ns3.ai/feed/news-flash?lang=en&excludeSources=2&limit=20"
+curl -s "https://api.ns3.ai/feed/news-flash?lang=en&excludeSources=2&limit=30"
 
 # Listings only
-curl -s "https://api.ns3.ai/feed/news-flash?lang=en&excludeSources=1&limit=20"
+curl -s "https://api.ns3.ai/feed/news-flash?lang=en&excludeSources=1&limit=30"
 ```
 
 ## Documentation
